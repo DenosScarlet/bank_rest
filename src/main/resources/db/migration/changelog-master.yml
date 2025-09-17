@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: db/migration/001-init-schema.yml
+  - include:
+      file: db/migration/002-insert-roles.yml

@@ -1,0 +1,55 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    container_name: bank_db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-bankdb}
+      POSTGRES_USER: ${DB_USER:-bankuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-bankpass}
+    volumes:
+      - bank_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${DB_USER:-bankuser}" ]
+      interval: 10s
+      retries: 5
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME:-bankdb}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-bankdb}
+      DB_USER: ${DB_USER:-bankuser}
+      DB_PASSWORD: ${DB_PASSWORD:-bankpass}
+      JWT_SECRET: ${JWT_SECRET:-change_this_to_a_long_secret_key}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-3600000}
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    restart: on-failure
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    depends_on:
+      - db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
+
+
+volumes:
+  bank_data:
+  pgadmin_data:
