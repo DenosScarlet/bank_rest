@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "card")
+@Table(name = "cards")
 public class Card {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +32,7 @@ public class Card {
     private Integer expiryYear;
 
     @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private CardStatus status;
 
     @Column(name = "balance", precision = 19, scale = 2)

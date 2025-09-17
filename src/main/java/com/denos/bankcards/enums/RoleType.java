@@ -1,5 +1,5 @@
 package com.denos.bankcards.enums;
 
 public enum RoleType {
-    ADMIN, USER
+    ROLE_ADMIN, ROLE_USER
 }
