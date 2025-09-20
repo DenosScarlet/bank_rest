@@ -8,12 +8,19 @@ import com.denos.bankcards.enums.CardStatus;
 import com.denos.bankcards.repository.CardRepository;
 import com.denos.bankcards.repository.UserRepository;
 import com.denos.bankcards.util.CryptoUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -33,6 +40,16 @@ public class CardController {
         this.cryptoUtil = cryptoUtil;
     }
 
+    @Operation(
+            summary = "Получение всех карт",
+            description = "Возвращает список всех карт в системе. Только для администраторов."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешный запрос",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = CardDto.class)))),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
     public List<CardDto> getAllCards() {
@@ -44,6 +61,16 @@ public class CardController {
                 .toList();
     }
 
+    @Operation(
+            summary = "Получение карт пользователя",
+            description = "Возвращает список карт аутентифицированного пользователя с поддержкой пагинации"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешный запрос",
+                    content = @Content(schema = @Schema(implementation = CardDto.class))),
+            @ApiResponse(responseCode = "401", description = "Пользователь не аутентифицирован",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PreAuthorize("hasRole('USER')")
     @GetMapping
     public Page<CardDto> getMyCards(@AuthenticationPrincipal UserDetails userDetails, Pageable pageable) {
@@ -55,6 +82,18 @@ public class CardController {
                 });
     }
 
+    @Operation(
+            summary = "Создание карты",
+            description = "Создает новую банковскую карту. Только для администраторов."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Карта успешно создана",
+                    content = @Content(schema = @Schema(implementation = CardDto.class))),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public CardDto createCard(@RequestBody CardRequest req) {
@@ -72,6 +111,17 @@ public class CardController {
         return CardDto.fromEntity(card, CryptoUtil.maskCardNumber(req.getCardNumber()));
     }
 
+    @Operation(
+            summary = "Блокировка карты",
+            description = "Блокирует карту. Пользователи могут блокировать только свои карты, администраторы - любые."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Карта успешно заблокирована"),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Карта не найдена",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @PostMapping("/{id}/block")
     public void blockCard(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id) {
@@ -86,6 +136,17 @@ public class CardController {
         cardRepository.save(card);
     }
 
+    @Operation(
+            summary = "Удаление карты",
+            description = "Удаляет карту по ID. Только для администраторов."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Карта успешно удалена"),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Карта не найден",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteCard(@PathVariable Long id) {

@@ -6,11 +6,17 @@ import com.denos.bankcards.entity.User;
 import com.denos.bankcards.repository.CardRepository;
 import com.denos.bankcards.repository.UserRepository;
 import com.denos.bankcards.util.CryptoUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.transaction.Transactional;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,6 +33,20 @@ public class TransferController {
         this.cryptoUtil = cryptoUtil;
     }
 
+    @Operation(
+            summary = "Перевод между картами",
+            description = "Выполняет перевод средств между картами текущего пользователя"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Перевод выполнен успешно",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "400", description = "Недостаточно средств или некорректные данные",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Доступ к картам запрещен",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Карта не найдена",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping
     @Transactional

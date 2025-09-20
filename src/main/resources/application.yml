@@ -28,10 +28,3 @@ security:
     secret: ${JWT_SECRET:CRBbaa3YsqMKlTq-hlg-nVEA8mryxih6DShVsxZ3uho=}
     expiration-ms: ${JWT_EXPIRATION_MS:3600000}
     issuer: bank-rest
-
-springdoc:
-  api-docs:
-    path: D:/bank_rest/docs
-  swagger-ui:
-    path: /swagger-ui.html
-    enabled: true
