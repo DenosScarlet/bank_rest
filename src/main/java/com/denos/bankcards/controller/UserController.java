@@ -4,12 +4,15 @@ import com.denos.bankcards.dto.UserDto;
 import com.denos.bankcards.dto.UserRegisterRequest;
 import com.denos.bankcards.entity.Role;
 import com.denos.bankcards.entity.User;
+import com.denos.bankcards.enums.RoleType;
 import com.denos.bankcards.repository.RoleRepository;
 import com.denos.bankcards.repository.UserRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -35,20 +38,28 @@ public class UserController {
                 .lastName(req.getLastName())
                 .middleName(req.getMiddleName())
                 .enabled(true)
-                .userRoles(Set.of(roleRepository.findByRoleName("ROLE_USER").orElseThrow()))
+                .userRoles(Set.of(roleRepository.findByRoleName(RoleType.ROLE_USER).orElseThrow()))
                 .build();
         userRepository.save(user);
         return UserDto.fromEntity(user);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/me")
     public UserDto me(Principal principal) {
         var user = userRepository.findByUsername(principal.getName()).orElseThrow();
         return UserDto.fromEntity(user);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public java.util.List<UserDto> all() {
+    public List<UserDto> all() {
         return userRepository.findAll().stream().map(UserDto::fromEntity).toList();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        userRepository.deleteById(id);
     }
 }

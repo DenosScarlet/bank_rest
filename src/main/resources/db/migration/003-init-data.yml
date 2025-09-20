@@ -7,9 +7,8 @@ databaseChangeLog:
         - insert:
             tableName: users
             columns:
-              - column: { name: user_id, valueNumeric: 1 }
               - column: { name: username, value: "admin" }
-              - column: { name: password, value: "$2a$10$D9Qi2dQjw5d.TpItpC7Eke5Y3YxGgZl1BBcHZR69oYicNpsgJWo2C" } # пароль: admin123
+              - column: { name: password, value: "$2b$10$1pVT2HqI0aKOcBt1ubpYHeQ/S9vA4OilNbRcLjL5Y7Ay1knXJWWS." } # пароль: admin123
               - column: { name: first_name, value: "System" }
               - column: { name: last_name, value: "Administrator" }
               - column: { name: middle_name, value: "" }
@@ -18,7 +17,6 @@ databaseChangeLog:
         - insert:
             tableName: users
             columns:
-              - column: { name: user_id, valueNumeric: 2 }
               - column: { name: username, value: "user1" }
               - column: { name: password, value: "$2b$10$trrJ5JbmfuR0HgUBKXRd5.fSTXfbmF8RmJkupJpM8hlLXL9NRRkly" } # пароль: user123
               - column: { name: first_name, value: "Иван" }
@@ -29,35 +27,17 @@ databaseChangeLog:
         - insert:
             tableName: users
             columns:
-              - column: { name: user_id, valueNumeric: 3 }
               - column: { name: username, value: "user2" }
-              - column: { name: password, value: "$2b$10$1pVT2HqI0aKOcBt1ubpYHeQ/S9vA4OilNbRcLjL5Y7Ay1knXJWWS." } # пароль: user123
+              - column: { name: password, value: "$2b$10$trrJ5JbmfuR0HgUBKXRd5.fSTXfbmF8RmJkupJpM8hlLXL9NRRkly" } # пароль: user123
               - column: { name: first_name, value: "Илья" }
               - column: { name: last_name, value: "Смирнов" }
               - column: { name: middle_name, value: "Петрович" }
               - column: { name: enabled, valueBoolean: true }
 
         - insert:
-            tableName: user_roles
-            columns:
-              - column: { name: user_id, valueNumeric: 1 }
-              - column: { name: role_id, valueNumeric: 1 }
-        - insert:
-            tableName: user_roles
-            columns:
-              - column: { name: user_id, valueNumeric: 2 }
-              - column: { name: role_id, valueNumeric: 2 }
-        - insert:
-            tableName: user_roles
-            columns:
-              - column: { name: user_id, valueNumeric: 3 }
-              - column: { name: role_id, valueNumeric: 2 }
-
-        - insert:
             tableName: cards
             columns:
-              - column: { name: card_id, valueNumeric: 1 }
-              - column: { name: card_number_encrypted, value: "4111111111111111" }
+              - column: { name: card_number_encrypted, value: "E+yMQuNplOfEH/szlTh84ub0wupIW8yR68D3+zKs3YnFv87BwtnPsea6N3w=" }
               - column: { name: owner_name, value: "IVAN PETROV" }
               - column: { name: expiry_month, valueNumeric: 12 }
               - column: { name: expiry_year, valueNumeric: 2028 }
@@ -67,8 +47,7 @@ databaseChangeLog:
         - insert:
             tableName: cards
             columns:
-              - column: { name: card_id, valueNumeric: 2 }
-              - column: { name: card_number_encrypted, value: "5555555555554444" }
+              - column: { name: card_number_encrypted, value: "INFzw3/i4ux18Dyn+x0nuvkgQb4eBtd9kyd8HKn1zyfqgxrowUaaGUT4+Es=" }
               - column: { name: owner_name, value: "IVAN PETROV" }
               - column: { name: expiry_month, valueNumeric: 5 }
               - column: { name: expiry_year, valueNumeric: 2027 }
@@ -79,8 +58,7 @@ databaseChangeLog:
         - insert:
             tableName: cards
             columns:
-              - column: { name: card_id, valueNumeric: 3 }
-              - column: { name: card_number_encrypted, value: "4000123412341234" }
+              - column: { name: card_number_encrypted, value: "6LUMBeSBAOt6jVCVyrCiXV4TdJn1NzEQMR76ISU/gDW6IhIjzklLqGXgWdI=" }
               - column: { name: owner_name, value: "ILYA SMIRNOV" }
               - column: { name: expiry_month, valueNumeric: 3 }
               - column: { name: expiry_year, valueNumeric: 2029 }
@@ -90,11 +68,31 @@ databaseChangeLog:
         - insert:
             tableName: cards
             columns:
-              - column: { name: card_id, valueNumeric: 4 }
-              - column: { name: card_number_encrypted, value: "6011111111111117" }
+              - column: { name: card_number_encrypted, value: "5rG4y34V2Xmr+FqcJuew2mjr5UeRw8l3mTLot7VorzUT0rM/ZzSEej8T/cw=" }
               - column: { name: owner_name, value: "ILYA SMIRNOV" }
               - column: { name: expiry_month, valueNumeric: 7 }
               - column: { name: expiry_year, valueNumeric: 2026 }
               - column: { name: status, value: "ACTIVE" }
               - column: { name: balance, valueNumeric: 8000 }
               - column: { name: user_id, valueNumeric: 3 }
+
+        - sql:
+            sql: |
+              INSERT INTO user_roles (user_id, role_id)
+              SELECT u.user_id, r.role_id
+              FROM users u, roles r
+              WHERE u.username = 'admin' AND r.role_name = 'ROLE_ADMIN';
+
+        - sql:
+            sql: |
+              INSERT INTO user_roles (user_id, role_id)
+              SELECT u.user_id, r.role_id
+              FROM users u, roles r
+              WHERE u.username = 'user1' AND r.role_name = 'ROLE_USER';
+
+        - sql:
+            sql: |
+              INSERT INTO user_roles (user_id, role_id)
+              SELECT u.user_id, r.role_id
+              FROM users u, roles r
+              WHERE u.username = 'user2' AND r.role_name = 'ROLE_USER';
